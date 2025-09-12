@@ -5,7 +5,8 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class NodeVO {
+public class NodeVO
+{
 
     private Long id;
     private String name;

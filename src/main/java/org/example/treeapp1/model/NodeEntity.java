@@ -6,15 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "nodes")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class NodeEntity {
+public class NodeEntity extends BaseEntity
+{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,34 +21,21 @@ public class NodeEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "parent_id")
-    private Long parentId;
-
     @Column(nullable = false)
     private String path;
 
-    @Column(name = "is_directory")
+    @Column(nullable = false)
     private boolean isDirectory;
 
+    @Column(nullable = false)
+    private boolean isRoot;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "knowledge_base_id", nullable = false)
-    private KnowledgeBaseEntity knowledgeBaseEntity;
+    @JoinColumn(nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private KnowledgeBaseEntity knowledgeBase;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private NodeEntity parent;
 }
     

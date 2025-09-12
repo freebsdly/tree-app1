@@ -1,12 +1,9 @@
-package org.example.treeapp1.service.impl;
+package org.example.treeapp1.service;
 
-import org.example.treeapp1.model.KnowledgeBaseEntity;
+import org.example.treeapp1.exception.ResourceExistException;
+import org.example.treeapp1.exception.ResourceNotFoundException;
 import org.example.treeapp1.model.NodeEntity;
 import org.example.treeapp1.repository.NodeRepository;
-import org.example.treeapp1.service.KnowledgeBaseService;
-import org.example.treeapp1.service.NodeDTO;
-import org.example.treeapp1.service.NodeService;
-import org.example.treeapp1.service.NodeVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,19 +12,26 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class NodeServiceImpl implements NodeService {
+public class NodeServiceImpl implements NodeService
+{
 
     private final NodeRepository nodeRepository;
     private final KnowledgeBaseService knowledgeBaseService;
+    private final ServiceMapper serviceMapper;
 
-    public NodeServiceImpl(NodeRepository nodeRepository, KnowledgeBaseService knowledgeBaseService) {
+    public NodeServiceImpl(NodeRepository nodeRepository,
+                           KnowledgeBaseService knowledgeBaseService,
+                           ServiceMapper serviceMapper)
+    {
         this.nodeRepository = nodeRepository;
         this.knowledgeBaseService = knowledgeBaseService;
+        this.serviceMapper = serviceMapper;
     }
 
     @Override
-    public NodeEntity createRootNode(Long knowledgeBaseId) throws ResourceNotFoundException {
-        KnowledgeBaseEntity knowledgeBaseEntity = knowledgeBaseService.getKnowledgeBaseById(knowledgeBaseId);
+    public NodeDTO createRootNode(Long knowledgeBaseId) throws ResourceNotFoundException
+    {
+        KnowledgeBaseDTO kb = knowledgeBaseService.getKnowledgeBaseById(knowledgeBaseId);
 
         // 检查是否已存在根节点
         if (nodeRepository.findByIdAndParentIdIsNull(knowledgeBaseId).isPresent()) {
@@ -36,29 +40,31 @@ public class NodeServiceImpl implements NodeService {
 
         NodeEntity root = new NodeEntity();
         root.setName("root");
-        root.setParentId(null);
+        root.setParent(null);
         root.setPath("/");
         root.setDirectory(true);
-        root.setKnowledgeBaseEntity(knowledgeBaseEntity);
+        root.setKnowledgeBase(serviceMapper.toEntity(kb));
 
-        return nodeRepository.save(root);
+        NodeEntity save = nodeRepository.save(root);
+        return serviceMapper.toDto(save);
     }
 
     @Override
-    public NodeEntity createNode(Long knowledgeBaseId, NodeDTO dto) throws ResourceNotFoundException {
-        KnowledgeBaseEntity knowledgeBaseEntity = knowledgeBaseService.getKnowledgeBaseById(knowledgeBaseId);
+    public NodeDTO createNode(Long knowledgeBaseId, NodeDTO dto) throws ResourceNotFoundException
+    {
+        KnowledgeBaseDTO kb = knowledgeBaseService.getKnowledgeBaseById(knowledgeBaseId);
 
         // 验证父节点是否存在
         NodeEntity parentNodeEntity;
-        if (dto.getParentId() == null) {
+        if (dto.getParent() == null) {
             // 只能有一个根节点
             throw new IllegalArgumentException("除根节点外，其他节点必须指定父节点");
         } else {
-            parentNodeEntity = nodeRepository.findById(dto.getParentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("父节点不存在，ID: " + dto.getParentId()));
+            parentNodeEntity = nodeRepository.findById(dto.getParent().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException(String.valueOf(dto.getParent().getId())));
 
             // 验证父节点是否属于当前知识库
-            if (!parentNodeEntity.getKnowledgeBaseEntity().getId().equals(knowledgeBaseId)) {
+            if (!parentNodeEntity.getKnowledgeBase().getId().equals(knowledgeBaseId)) {
                 throw new IllegalArgumentException("父节点不属于当前知识库");
             }
 
@@ -69,8 +75,8 @@ public class NodeServiceImpl implements NodeService {
         }
 
         // 检查同一目录下是否有同名节点
-        if (nodeRepository.existsByIdAndParentIdAndName(knowledgeBaseId, dto.getParentId(), dto.getName())) {
-            throw new IllegalArgumentException("同一目录下已存在同名节点: " + dto.getName());
+        if (nodeRepository.existsByIdAndParentIdAndName(knowledgeBaseId, dto.getParent().getId(), dto.getName())) {
+            throw new ResourceExistException(dto.getName());
         }
 
         // 计算路径
@@ -85,74 +91,91 @@ public class NodeServiceImpl implements NodeService {
 
         NodeEntity nodeEntity = new NodeEntity();
         nodeEntity.setName(dto.getName());
-        nodeEntity.setParentId(dto.getParentId());
+        nodeEntity.setParent(parentNodeEntity);
         nodeEntity.setPath(path);
         nodeEntity.setDirectory(dto.isDirectory());
-        nodeEntity.setKnowledgeBaseEntity(knowledgeBaseEntity);
+        nodeEntity.setKnowledgeBase(serviceMapper.toEntity(kb));
 
-        return nodeRepository.save(nodeEntity);
+        NodeEntity save = nodeRepository.save(nodeEntity);
+        return serviceMapper.toDto(save);
     }
 
     @Override
-    public NodeEntity getNodeById(Long id) throws ResourceNotFoundException {
-        return nodeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("节点不存在，ID: " + id));
+    public NodeDTO getNodeById(Long id) throws ResourceNotFoundException
+    {
+        NodeEntity nodeEntity = nodeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.valueOf(id)));
+        return serviceMapper.toDto(nodeEntity);
     }
 
     @Override
-    public List<NodeEntity> getChildren(Long knowledgeBaseId, Long parentId) {
-        return nodeRepository.findByIdAndParentId(knowledgeBaseId, parentId);
+    public List<NodeDTO> getChildren(Long knowledgeBaseId, Long parentId)
+    {
+        List<NodeEntity> list = nodeRepository.findByKnowledgeBaseIdAndParentId(
+                knowledgeBaseId,
+                parentId);
+        return list.stream()
+                .map(serviceMapper::toDto)
+                .toList();
     }
 
     @Override
     @Transactional
-    public NodeEntity updateNode(Long knowledgeBaseId, Long nodeId, NodeDTO dto) throws ResourceNotFoundException {
-        NodeEntity nodeEntity = getNodeById(nodeId);
+    public NodeDTO updateNode(Long knowledgeBaseId, Long nodeId, NodeDTO dto) throws ResourceNotFoundException
+    {
+        NodeEntity nodeById = nodeRepository.findById(nodeId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.valueOf(nodeId)));
 
         // 验证节点是否属于当前知识库
-        if (!nodeEntity.getKnowledgeBaseEntity().getId().equals(knowledgeBaseId)) {
+        if (!nodeById.getKnowledgeBase().getId().equals(knowledgeBaseId)) {
             throw new IllegalArgumentException("节点不属于当前知识库");
         }
 
         // 如果修改了名称，需要更新自身路径和所有子节点路径
-        if (!nodeEntity.getName().equals(dto.getName())) {
-            String oldName = nodeEntity.getName();
+        if (!nodeById.getName().equals(dto.getName())) {
+            String oldName = nodeById.getName();
             String newName = dto.getName();
 
             // 检查新名称在同一目录下是否已存在
             if (nodeRepository.existsByIdAndParentIdAndName(
-                    knowledgeBaseId, nodeEntity.getParentId(), newName)) {
-                throw new IllegalArgumentException("同一目录下已存在同名节点: " + newName);
+                    knowledgeBaseId, nodeById.getParent().getId(), newName)) {
+                throw new ResourceExistException(newName);
             }
 
             // 更新当前节点名称
-            nodeEntity.setName(newName);
+            nodeById.setName(newName);
 
             // 计算新路径
-            String oldPath = nodeEntity.getPath();
-            String parentPath = nodeEntity.getParentId() == null ? "/" : nodeRepository.findById(nodeEntity.getParentId()).get().getPath();
+            String oldPath = nodeById.getPath();
+            String parentPath = nodeById.getParent().getId() == null ? "/" : nodeRepository
+                    .findById(nodeById.getParent().getId())
+                    .get()
+                    .getPath();
 
             String newPath = parentPath.equals("/")
                     ? "/" + newName
                     : parentPath + "/" + newName;
 
-            if (nodeEntity.isDirectory() && !newPath.endsWith("/")) {
+            if (nodeById.isDirectory() && !newPath.endsWith("/")) {
                 newPath += "/";
             }
 
-            nodeEntity.setPath(newPath);
-            nodeRepository.save(nodeEntity);
+            nodeById.setPath(newPath);
+            nodeRepository.save(nodeById);
 
             // 更新所有子节点的路径
             updateChildPaths(knowledgeBaseId, oldPath, newPath);
         }
 
-        return nodeEntity;
+        return serviceMapper.toDto(nodeById);
     }
 
-    private void updateChildPaths(Long knowledgeBaseId, String oldParentPath, String newParentPath) {
+    @Transactional
+    public void updateChildPaths(Long knowledgeBaseId, String oldParentPath, String newParentPath)
+    {
         // 获取所有以oldParentPath为前缀的节点
-        List<NodeEntity> children = nodeRepository.findByIdAndParentId(knowledgeBaseId,
+        List<NodeEntity> children = nodeRepository.findByKnowledgeBaseIdAndParentId(
+                knowledgeBaseId,
                 nodeRepository.findByIdAndPath(knowledgeBaseId, oldParentPath).get().getId());
 
         for (NodeEntity child : children) {
@@ -171,11 +194,12 @@ public class NodeServiceImpl implements NodeService {
 
     @Override
     @Transactional
-    public void deleteNode(Long knowledgeBaseId, Long nodeId) throws ResourceNotFoundException {
-        NodeEntity nodeEntity = getNodeById(nodeId);
+    public void deleteNode(Long knowledgeBaseId, Long nodeId) throws ResourceNotFoundException
+    {
+        NodeDTO nodeById = getNodeById(nodeId);
 
         // 验证节点是否属于当前知识库
-        if (!nodeEntity.getKnowledgeBaseEntity().getId().equals(knowledgeBaseId)) {
+        if (!nodeById.getKnowledgeBase().getId().equals(knowledgeBaseId)) {
             throw new IllegalArgumentException("节点不属于当前知识库");
         }
 
@@ -183,11 +207,12 @@ public class NodeServiceImpl implements NodeService {
         deleteChildren(knowledgeBaseId, nodeId);
 
         // 删除当前节点
-        nodeRepository.delete(nodeEntity);
+        nodeRepository.delete(serviceMapper.toEntity(nodeById));
     }
 
-    private void deleteChildren(Long knowledgeBaseId, Long parentId) {
-        List<NodeEntity> children = nodeRepository.findByIdAndParentId(knowledgeBaseId, parentId);
+    private void deleteChildren(Long knowledgeBaseId, Long parentId)
+    {
+        List<NodeEntity> children = nodeRepository.findByKnowledgeBaseIdAndParentId(knowledgeBaseId, parentId);
         for (NodeEntity child : children) {
             // 递归删除子节点的子节点
             deleteChildren(knowledgeBaseId, child.getId());
@@ -197,7 +222,8 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public NodeVO getTree(Long knowledgeBaseId) throws ResourceNotFoundException {
+    public NodeVO getTree(Long knowledgeBaseId) throws ResourceNotFoundException
+    {
         // 获取根节点
         NodeEntity rootNodeEntity = nodeRepository.findByIdAndParentIdIsNull(knowledgeBaseId)
                 .orElseThrow(() -> new ResourceNotFoundException("知识库不存在根节点，请先创建根节点"));
@@ -206,18 +232,21 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public NodeVO getSubTree(Long knowledgeBaseId, Long nodeId) throws ResourceNotFoundException {
-        NodeEntity nodeEntity = getNodeById(nodeId);
+    public NodeVO getSubTree(Long knowledgeBaseId, Long nodeId) throws ResourceNotFoundException
+    {
+        NodeEntity nodeById = nodeRepository.findById(nodeId)
+                .orElseThrow(() -> new ResourceNotFoundException("节点不存在"));
 
         // 验证节点是否属于当前知识库
-        if (!nodeEntity.getKnowledgeBaseEntity().getId().equals(knowledgeBaseId)) {
+        if (!nodeById.getKnowledgeBase().getId().equals(knowledgeBaseId)) {
             throw new IllegalArgumentException("节点不属于当前知识库");
         }
 
-        return buildTree(knowledgeBaseId, nodeEntity);
+        return buildTree(knowledgeBaseId, nodeById);
     }
 
-    private NodeVO buildTree(Long knowledgeBaseId, NodeEntity nodeEntity) {
+    private NodeVO buildTree(Long knowledgeBaseId, NodeEntity nodeEntity)
+    {
         NodeVO nodeVO = new NodeVO();
         nodeVO.setId(nodeEntity.getId());
         nodeVO.setName(nodeEntity.getName());
@@ -225,11 +254,13 @@ public class NodeServiceImpl implements NodeService {
         nodeVO.setDirectory(nodeEntity.isDirectory());
 
         // 递归构建子树
-        List<NodeEntity> children = nodeRepository.findByIdAndParentId(knowledgeBaseId, nodeEntity.getId());
+        List<NodeEntity> children = nodeRepository.findByKnowledgeBaseIdAndParentId(
+                knowledgeBaseId,
+                nodeEntity.getId());
         if (!children.isEmpty()) {
             nodeVO.setChildren(children.stream()
-                    .map(child -> buildTree(knowledgeBaseId, child))
-                    .collect(Collectors.toList()));
+                                       .map(child -> buildTree(knowledgeBaseId, child))
+                                       .collect(Collectors.toList()));
         } else {
             nodeVO.setChildren(new ArrayList<>());
         }

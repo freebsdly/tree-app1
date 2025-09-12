@@ -7,8 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface KnowledgeBaseRepository extends JpaRepository<KnowledgeBaseEntity, Long> {
+public interface KnowledgeBaseRepository extends JpaRepository<KnowledgeBaseEntity, Long>
+{
     Optional<KnowledgeBaseEntity> findByName(String name);
+
     boolean existsByName(String name);
 }
     

@@ -1,12 +1,10 @@
 package org.example.treeapp1.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.treeapp1.model.NodeEntity;
+import org.example.treeapp1.exception.ResourceNotFoundException;
 import org.example.treeapp1.service.NodeDTO;
 import org.example.treeapp1.service.NodeService;
 import org.example.treeapp1.service.NodeVO;
-import org.example.treeapp1.service.impl.ResourceNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,63 +13,75 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/knowledge-bases/{knowledgeBaseId}/nodes")
 @RequiredArgsConstructor
-public class NodeController {
+public class NodeController
+{
 
     private final NodeService nodeService;
 
     @PostMapping("/root")
-    public ResponseEntity<NodeEntity> createRootNode(@PathVariable Long knowledgeBaseId) throws ResourceNotFoundException {
-        NodeEntity rootNodeEntity = nodeService.createRootNode(knowledgeBaseId);
-        return new ResponseEntity<>(rootNodeEntity, HttpStatus.CREATED);
+    public ApiBody<NodeDTO> createRootNode(@PathVariable Long knowledgeBaseId) throws ResourceNotFoundException
+    {
+        NodeDTO rootNodeDTO = nodeService.createRootNode(knowledgeBaseId);
+        return ApiBody.success(rootNodeDTO);
     }
 
     @PostMapping
-    public ResponseEntity<NodeEntity> createNode(
+    public ApiBody<NodeDTO> createNode(
             @PathVariable Long knowledgeBaseId,
-            @RequestBody NodeDTO dto) throws ResourceNotFoundException {
-        NodeEntity nodeEntity = nodeService.createNode(knowledgeBaseId, dto);
-        return new ResponseEntity<>(nodeEntity, HttpStatus.CREATED);
+            @RequestBody NodeDTO dto) throws ResourceNotFoundException
+    {
+        NodeDTO nodeDTO = nodeService.createNode(knowledgeBaseId, dto);
+        return ApiBody.success(nodeDTO);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<NodeEntity> getNodeById(
+    public ApiBody<NodeDTO> getNodeById(
             @PathVariable Long knowledgeBaseId,
-            @PathVariable Long id) throws ResourceNotFoundException {
-        return ResponseEntity.ok(nodeService.getNodeById(id));
+            @PathVariable Long id) throws ResourceNotFoundException
+    {
+        NodeDTO nodeDTO = nodeService.getNodeById(id);
+        return ApiBody.success(nodeDTO);
     }
 
     @GetMapping("/parent/{parentId}")
-    public ResponseEntity<List<NodeEntity>> getChildren(
+    public ApiBody<List<NodeDTO>> getChildren(
             @PathVariable Long knowledgeBaseId,
-            @PathVariable Long parentId) {
-        return ResponseEntity.ok(nodeService.getChildren(knowledgeBaseId, parentId));
+            @PathVariable Long parentId)
+    {
+        List<NodeDTO> children = nodeService.getChildren(knowledgeBaseId, parentId);
+        return ApiBody.success(children);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<NodeEntity> updateNode(
+    public ApiBody<NodeDTO> updateNode(
             @PathVariable Long knowledgeBaseId,
             @PathVariable Long id,
-            @RequestBody NodeDTO dto) throws ResourceNotFoundException {
-        return ResponseEntity.ok(nodeService.updateNode(knowledgeBaseId, id, dto));
+            @RequestBody NodeDTO dto) throws ResourceNotFoundException
+    {
+        NodeDTO nodeDTO = nodeService.updateNode(knowledgeBaseId, id, dto);
+        return ApiBody.success(nodeDTO);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteNode(
+    public ApiBody<Void> deleteNode(
             @PathVariable Long knowledgeBaseId,
-            @PathVariable Long id) throws ResourceNotFoundException {
+            @PathVariable Long id) throws ResourceNotFoundException
+    {
         nodeService.deleteNode(knowledgeBaseId, id);
-        return ResponseEntity.noContent().build();
+        return ApiBody.success(null);
     }
 
     @GetMapping("/tree")
-    public ResponseEntity<NodeVO> getTree(@PathVariable Long knowledgeBaseId) throws ResourceNotFoundException {
+    public ResponseEntity<NodeVO> getTree(@PathVariable Long knowledgeBaseId) throws ResourceNotFoundException
+    {
         return ResponseEntity.ok(nodeService.getTree(knowledgeBaseId));
     }
 
     @GetMapping("/subtree/{nodeId}")
     public ResponseEntity<NodeVO> getSubTree(
             @PathVariable Long knowledgeBaseId,
-            @PathVariable Long nodeId) throws ResourceNotFoundException {
+            @PathVariable Long nodeId) throws ResourceNotFoundException
+    {
         return ResponseEntity.ok(nodeService.getSubTree(knowledgeBaseId, nodeId));
     }
 }
