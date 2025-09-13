@@ -10,14 +10,10 @@ public interface KnowledgeBaseService
 
     KnowledgeBaseDTO getKnowledgeBaseById(Long id) throws BusinessException;
 
-    KnowledgeBaseDTO getKnowledgeBaseByName(String name) throws BusinessException;
-
     List<KnowledgeBaseDTO> getAllKnowledgeBases() throws BusinessException;
 
     KnowledgeBaseDTO updateKnowledgeBase(KnowledgeBaseDTO.Update dto) throws BusinessException;
 
     void deleteKnowledgeBase(Long id) throws BusinessException;
-
-    boolean existsByName(String name);
 }
     

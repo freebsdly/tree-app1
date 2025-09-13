@@ -50,14 +50,6 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService
     }
 
     @Override
-    public KnowledgeBaseDTO getKnowledgeBaseByName(String name) throws BusinessException
-    {
-        KnowledgeBaseEntity knowledgeBaseEntity = knowledgeBaseRepository.findByName(name)
-                .orElseThrow(() -> new ResourceNotFoundException(name));
-        return serviceMapper.toDto(knowledgeBaseEntity);
-    }
-
-    @Override
     public List<KnowledgeBaseDTO> getAllKnowledgeBases()
     {
         return knowledgeBaseRepository.findAll().stream().map(serviceMapper::toDto).collect(Collectors.toList());
@@ -87,12 +79,6 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService
         nodeRepository.deleteByKnowledgeBaseId(id);
         // 再删除知识库
         knowledgeBaseRepository.deleteById(id);
-    }
-
-    @Override
-    public boolean existsByName(String name)
-    {
-        return knowledgeBaseRepository.existsByName(name);
     }
 }
     
