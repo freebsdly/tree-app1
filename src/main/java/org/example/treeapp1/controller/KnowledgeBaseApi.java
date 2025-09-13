@@ -43,12 +43,11 @@ public class KnowledgeBaseApi implements KnowledgeBaseDoc
     }
 
     @Override
-    @PutMapping("/{id}")
+    @PutMapping
     public ApiBody<KnowledgeBaseDTO> updateKnowledgeBase(
-            @PathVariable Long id,
-            @RequestBody KnowledgeBaseDTO dto) throws BusinessException
+            @RequestBody KnowledgeBaseDTO.Update dto) throws BusinessException
     {
-        return ApiBody.success(knowledgeBaseService.updateKnowledgeBase(id, dto));
+        return ApiBody.success(knowledgeBaseService.updateKnowledgeBase(dto));
     }
 
     @Override

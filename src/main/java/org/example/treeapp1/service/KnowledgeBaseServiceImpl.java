@@ -64,18 +64,17 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService
     }
 
     @Override
-    public KnowledgeBaseDTO updateKnowledgeBase(Long id, KnowledgeBaseDTO dto) throws BusinessException
+    public KnowledgeBaseDTO updateKnowledgeBase(KnowledgeBaseDTO.Update dto) throws BusinessException
     {
-        KnowledgeBaseDTO existing = getKnowledgeBaseById(id);
+        KnowledgeBaseEntity existing = knowledgeBaseRepository.findById(dto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(String.valueOf(dto.getId())));
 
         if (!existing.getName().equals(dto.getName()) && knowledgeBaseRepository.existsByName(dto.getName())) {
-            throw new IllegalArgumentException("知识库名称已存在: " + dto.getName());
+            throw new ResourceExistException(dto.getName());
         }
 
-        existing.setName(dto.getName());
-        existing.setDescription(dto.getDescription());
-
-        KnowledgeBaseEntity save = knowledgeBaseRepository.save(serviceMapper.toEntity(existing));
+        serviceMapper.partialUpdate(dto, existing);
+        KnowledgeBaseEntity save = knowledgeBaseRepository.save(existing);
         return serviceMapper.toDto(save);
     }
 

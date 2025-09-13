@@ -26,4 +26,13 @@ public class KnowledgeBaseDTO implements Serializable
         KnowledgeBaseType type;
         String description;
     }
+
+    @Data
+    public static class Update
+    {
+        Long id;
+        String name;
+        KnowledgeBaseType type;
+        String description;
+    }
 }

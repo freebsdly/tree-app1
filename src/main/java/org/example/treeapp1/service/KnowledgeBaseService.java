@@ -14,7 +14,7 @@ public interface KnowledgeBaseService
 
     List<KnowledgeBaseDTO> getAllKnowledgeBases() throws BusinessException;
 
-    KnowledgeBaseDTO updateKnowledgeBase(Long id, KnowledgeBaseDTO dto) throws BusinessException;
+    KnowledgeBaseDTO updateKnowledgeBase(KnowledgeBaseDTO.Update dto) throws BusinessException;
 
     void deleteKnowledgeBase(Long id) throws BusinessException;
 

@@ -22,7 +22,7 @@ public interface KnowledgeBaseDoc
     ApiBody<List<KnowledgeBaseDTO>> getAllKnowledgeBases() throws BusinessException;
 
     @Operation(summary = "Update a knowledge base")
-    ApiBody<KnowledgeBaseDTO> updateKnowledgeBase(Long id, @RequestBody KnowledgeBaseDTO dto)
+    ApiBody<KnowledgeBaseDTO> updateKnowledgeBase(@RequestBody KnowledgeBaseDTO.Update dto)
             throws BusinessException;
 
     @Operation(summary = "Delete a knowledge base")
