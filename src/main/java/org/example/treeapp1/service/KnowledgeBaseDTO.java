@@ -18,4 +18,12 @@ public class KnowledgeBaseDTO implements Serializable
     String description;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+
+    @Data
+    public static class Create
+    {
+        String name;
+        KnowledgeBaseType type;
+        String description;
+    }
 }

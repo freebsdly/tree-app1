@@ -9,11 +9,13 @@ public interface ServiceMapper
 {
     KnowledgeBaseEntity toEntity(KnowledgeBaseDTO knowledgeBaseDTO);
 
+    KnowledgeBaseEntity toEntity(KnowledgeBaseDTO.Create knowledgeBaseDTO);
+
     KnowledgeBaseDTO toDto(KnowledgeBaseEntity knowledgeBaseEntity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     KnowledgeBaseEntity partialUpdate(KnowledgeBaseDTO knowledgeBaseDTO,
-                                      @MappingTarget KnowledgeBaseEntity knowledgeBaseEntity);
+            @MappingTarget KnowledgeBaseEntity knowledgeBaseEntity);
 
     NodeEntity toEntity(NodeDTO nodeDTO);
 

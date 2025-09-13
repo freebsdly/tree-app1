@@ -21,7 +21,6 @@ public class KnowledgeBaseEntity extends BaseEntity
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Enumerated(EnumType.ORDINAL)
     @Column(nullable = false)
     private KnowledgeBaseType type;
 

@@ -1,5 +1,6 @@
 package org.example.treeapp1.service;
 
+import org.example.treeapp1.exception.BusinessException;
 import org.example.treeapp1.exception.ResourceExistException;
 import org.example.treeapp1.exception.ResourceNotFoundException;
 import org.example.treeapp1.model.NodeEntity;
@@ -19,9 +20,10 @@ public class NodeServiceImpl implements NodeService
     private final KnowledgeBaseService knowledgeBaseService;
     private final ServiceMapper serviceMapper;
 
-    public NodeServiceImpl(NodeRepository nodeRepository,
-                           KnowledgeBaseService knowledgeBaseService,
-                           ServiceMapper serviceMapper)
+    public NodeServiceImpl(
+            NodeRepository nodeRepository,
+            KnowledgeBaseService knowledgeBaseService,
+            ServiceMapper serviceMapper)
     {
         this.nodeRepository = nodeRepository;
         this.knowledgeBaseService = knowledgeBaseService;
@@ -29,7 +31,7 @@ public class NodeServiceImpl implements NodeService
     }
 
     @Override
-    public NodeDTO createRootNode(Long knowledgeBaseId) throws ResourceNotFoundException
+    public NodeDTO createRootNode(Long knowledgeBaseId) throws BusinessException
     {
         KnowledgeBaseDTO kb = knowledgeBaseService.getKnowledgeBaseById(knowledgeBaseId);
 
@@ -50,7 +52,7 @@ public class NodeServiceImpl implements NodeService
     }
 
     @Override
-    public NodeDTO createNode(Long knowledgeBaseId, NodeDTO dto) throws ResourceNotFoundException
+    public NodeDTO createNode(Long knowledgeBaseId, NodeDTO dto) throws BusinessException
     {
         KnowledgeBaseDTO kb = knowledgeBaseService.getKnowledgeBaseById(knowledgeBaseId);
 
@@ -101,7 +103,7 @@ public class NodeServiceImpl implements NodeService
     }
 
     @Override
-    public NodeDTO getNodeById(Long id) throws ResourceNotFoundException
+    public NodeDTO getNodeById(Long id) throws BusinessException
     {
         NodeEntity nodeEntity = nodeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.valueOf(id)));
@@ -113,7 +115,8 @@ public class NodeServiceImpl implements NodeService
     {
         List<NodeEntity> list = nodeRepository.findByKnowledgeBaseIdAndParentId(
                 knowledgeBaseId,
-                parentId);
+                parentId
+                                                                               );
         return list.stream()
                 .map(serviceMapper::toDto)
                 .toList();
@@ -121,7 +124,7 @@ public class NodeServiceImpl implements NodeService
 
     @Override
     @Transactional
-    public NodeDTO updateNode(Long knowledgeBaseId, Long nodeId, NodeDTO dto) throws ResourceNotFoundException
+    public NodeDTO updateNode(Long knowledgeBaseId, Long nodeId, NodeDTO dto) throws BusinessException
     {
         NodeEntity nodeById = nodeRepository.findById(nodeId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.valueOf(nodeId)));
@@ -138,7 +141,8 @@ public class NodeServiceImpl implements NodeService
 
             // 检查新名称在同一目录下是否已存在
             if (nodeRepository.existsByIdAndParentIdAndName(
-                    knowledgeBaseId, nodeById.getParent().getId(), newName)) {
+                    knowledgeBaseId, nodeById.getParent().getId(), newName))
+            {
                 throw new ResourceExistException(newName);
             }
 
@@ -176,7 +180,8 @@ public class NodeServiceImpl implements NodeService
         // 获取所有以oldParentPath为前缀的节点
         List<NodeEntity> children = nodeRepository.findByKnowledgeBaseIdAndParentId(
                 knowledgeBaseId,
-                nodeRepository.findByIdAndPath(knowledgeBaseId, oldParentPath).get().getId());
+                nodeRepository.findByIdAndPath(knowledgeBaseId, oldParentPath).get().getId()
+                                                                                   );
 
         for (NodeEntity child : children) {
             String oldChildPath = child.getPath();
@@ -194,7 +199,7 @@ public class NodeServiceImpl implements NodeService
 
     @Override
     @Transactional
-    public void deleteNode(Long knowledgeBaseId, Long nodeId) throws ResourceNotFoundException
+    public void deleteNode(Long knowledgeBaseId, Long nodeId) throws BusinessException
     {
         NodeDTO nodeById = getNodeById(nodeId);
 
@@ -222,7 +227,7 @@ public class NodeServiceImpl implements NodeService
     }
 
     @Override
-    public NodeVO getTree(Long knowledgeBaseId) throws ResourceNotFoundException
+    public NodeVO getTree(Long knowledgeBaseId) throws BusinessException
     {
         // 获取根节点
         NodeEntity rootNodeEntity = nodeRepository.findByIdAndParentIdIsNull(knowledgeBaseId)
@@ -232,7 +237,7 @@ public class NodeServiceImpl implements NodeService
     }
 
     @Override
-    public NodeVO getSubTree(Long knowledgeBaseId, Long nodeId) throws ResourceNotFoundException
+    public NodeVO getSubTree(Long knowledgeBaseId, Long nodeId) throws BusinessException
     {
         NodeEntity nodeById = nodeRepository.findById(nodeId)
                 .orElseThrow(() -> new ResourceNotFoundException("节点不存在"));
@@ -254,13 +259,12 @@ public class NodeServiceImpl implements NodeService
         nodeVO.setDirectory(nodeEntity.isDirectory());
 
         // 递归构建子树
-        List<NodeEntity> children = nodeRepository.findByKnowledgeBaseIdAndParentId(
-                knowledgeBaseId,
+        List<NodeEntity> children = nodeRepository.findByKnowledgeBaseIdAndParentId(knowledgeBaseId,
                 nodeEntity.getId());
         if (!children.isEmpty()) {
             nodeVO.setChildren(children.stream()
-                                       .map(child -> buildTree(knowledgeBaseId, child))
-                                       .collect(Collectors.toList()));
+                    .map(child -> buildTree(knowledgeBaseId, child))
+                    .collect(Collectors.toList()));
         } else {
             nodeVO.setChildren(new ArrayList<>());
         }

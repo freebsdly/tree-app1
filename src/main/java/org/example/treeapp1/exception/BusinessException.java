@@ -6,11 +6,11 @@ import lombok.Getter;
  * 自定义异常基类
  */
 @Getter
-public class BaseException extends RuntimeException
+public class BusinessException extends Exception
 {
     private final int code;
 
-    public BaseException(int code, String message)
+    public BusinessException(int code, String message)
     {
         super(message);
         this.code = code;

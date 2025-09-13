@@ -1,5 +1,7 @@
 package org.example.treeapp1.service;
 
+import org.example.treeapp1.exception.BusinessException;
+import org.example.treeapp1.exception.ResourceExistException;
 import org.example.treeapp1.exception.ResourceNotFoundException;
 import org.example.treeapp1.model.KnowledgeBaseEntity;
 import org.example.treeapp1.repository.KnowledgeBaseRepository;
@@ -29,22 +31,18 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService
     }
 
     @Override
-    public KnowledgeBaseDTO createKnowledgeBase(KnowledgeBaseDTO dto)
+    public KnowledgeBaseDTO createKnowledgeBase(KnowledgeBaseDTO.Create dto) throws BusinessException
     {
-        if (knowledgeBaseRepository.existsByName(dto.getName())) {
-            throw new IllegalArgumentException("知识库名称已存在: " + dto.getName());
+        if (knowledgeBaseRepository.findByName(dto.getName()).isPresent()) {
+            throw new ResourceExistException(dto.getName());
         }
-
-        KnowledgeBaseEntity knowledgeBaseEntity = new KnowledgeBaseEntity();
-        knowledgeBaseEntity.setName(dto.getName());
-        knowledgeBaseEntity.setDescription(dto.getDescription());
-
+        KnowledgeBaseEntity knowledgeBaseEntity = serviceMapper.toEntity(dto);
         KnowledgeBaseEntity save = knowledgeBaseRepository.save(knowledgeBaseEntity);
         return serviceMapper.toDto(save);
     }
 
     @Override
-    public KnowledgeBaseDTO getKnowledgeBaseById(Long id) throws ResourceNotFoundException
+    public KnowledgeBaseDTO getKnowledgeBaseById(Long id) throws BusinessException
     {
         KnowledgeBaseEntity knowledgeBaseEntity = knowledgeBaseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.valueOf(id)));
@@ -52,7 +50,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService
     }
 
     @Override
-    public KnowledgeBaseDTO getKnowledgeBaseByName(String name) throws ResourceNotFoundException
+    public KnowledgeBaseDTO getKnowledgeBaseByName(String name) throws BusinessException
     {
         KnowledgeBaseEntity knowledgeBaseEntity = knowledgeBaseRepository.findByName(name)
                 .orElseThrow(() -> new ResourceNotFoundException(name));
@@ -66,7 +64,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService
     }
 
     @Override
-    public KnowledgeBaseDTO updateKnowledgeBase(Long id, KnowledgeBaseDTO dto) throws ResourceNotFoundException
+    public KnowledgeBaseDTO updateKnowledgeBase(Long id, KnowledgeBaseDTO dto) throws BusinessException
     {
         KnowledgeBaseDTO existing = getKnowledgeBaseById(id);
 

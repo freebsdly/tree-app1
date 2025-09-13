@@ -1,22 +1,22 @@
 package org.example.treeapp1.service;
 
-import org.example.treeapp1.exception.ResourceNotFoundException;
+import org.example.treeapp1.exception.BusinessException;
 
 import java.util.List;
 
 public interface KnowledgeBaseService
 {
-    KnowledgeBaseDTO createKnowledgeBase(KnowledgeBaseDTO dto);
+    KnowledgeBaseDTO createKnowledgeBase(KnowledgeBaseDTO.Create dto) throws BusinessException;
 
-    KnowledgeBaseDTO getKnowledgeBaseById(Long id) throws ResourceNotFoundException;
+    KnowledgeBaseDTO getKnowledgeBaseById(Long id) throws BusinessException;
 
-    KnowledgeBaseDTO getKnowledgeBaseByName(String name) throws ResourceNotFoundException;
+    KnowledgeBaseDTO getKnowledgeBaseByName(String name) throws BusinessException;
 
-    List<KnowledgeBaseDTO> getAllKnowledgeBases();
+    List<KnowledgeBaseDTO> getAllKnowledgeBases() throws BusinessException;
 
-    KnowledgeBaseDTO updateKnowledgeBase(Long id, KnowledgeBaseDTO dto) throws ResourceNotFoundException;
+    KnowledgeBaseDTO updateKnowledgeBase(Long id, KnowledgeBaseDTO dto) throws BusinessException;
 
-    void deleteKnowledgeBase(Long id) throws ResourceNotFoundException;
+    void deleteKnowledgeBase(Long id) throws BusinessException;
 
     boolean existsByName(String name);
 }

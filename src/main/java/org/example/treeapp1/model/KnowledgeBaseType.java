@@ -1,5 +1,8 @@
 package org.example.treeapp1.model;
 
+import lombok.Getter;
+
+@Getter
 public enum KnowledgeBaseType
 {
     PERSONAL(1),
