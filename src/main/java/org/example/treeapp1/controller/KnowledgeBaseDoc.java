@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.treeapp1.exception.BusinessException;
 import org.example.treeapp1.service.KnowledgeBaseDTO;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -22,9 +21,9 @@ public interface KnowledgeBaseDoc
     ApiBody<List<KnowledgeBaseDTO>> getAllKnowledgeBases() throws BusinessException;
 
     @Operation(summary = "Update a knowledge base")
-    ApiBody<KnowledgeBaseDTO> updateKnowledgeBase(@RequestBody KnowledgeBaseDTO.Update dto)
+    ApiBody<KnowledgeBaseDTO> updateKnowledgeBase(Long id, @RequestBody KnowledgeBaseDTO.Update dto)
             throws BusinessException;
 
     @Operation(summary = "Delete a knowledge base")
-    ApiBody<Void> deleteKnowledgeBase(@PathVariable Long id) throws BusinessException;
+    ApiBody<Void> deleteKnowledgeBase(Long id) throws BusinessException;
 }
