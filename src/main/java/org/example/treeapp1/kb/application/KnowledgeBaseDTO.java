@@ -1,7 +1,7 @@
-package org.example.treeapp1.application;
+package org.example.treeapp1.kb.application;
 
 import lombok.Data;
-import org.example.treeapp1.domain.knowledgebase.model.KnowledgeBaseType;
+import org.example.treeapp1.kb.domain.knowledgebase.KnowledgeBaseType;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

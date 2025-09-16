@@ -1,12 +1,12 @@
-package org.example.treeapp1.application;
+package org.example.treeapp1.kb.application;
 
-import org.example.treeapp1.domain.knowledgebase.factory.KnowledgeBaseFactory;
-import org.example.treeapp1.domain.knowledgebase.model.KnowledgeBase;
-import org.example.treeapp1.domain.knowledgebase.repository.KnowledgeBaseRepository;
-import org.example.treeapp1.domain.knowledgebase.service.KnowledgeBaseDomainService;
 import org.example.treeapp1.exception.BusinessException;
 import org.example.treeapp1.exception.ResourceNotFoundException;
-import org.example.treeapp1.infrastructure.mapper.KnowledgeBaseMapper;
+import org.example.treeapp1.kb.domain.knowledgebase.KnowledgeBase;
+import org.example.treeapp1.kb.domain.knowledgebase.KnowledgeBaseDomainService;
+import org.example.treeapp1.kb.domain.knowledgebase.KnowledgeBaseFactory;
+import org.example.treeapp1.kb.domain.knowledgebase.KnowledgeBaseRepository;
+import org.example.treeapp1.kb.infrastructure.mapper.KnowledgeBaseMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 @Service
 public class KnowledgeBaseAppService
 {
-
     private final KnowledgeBaseRepository knowledgeBaseRepository;
     private final KnowledgeBaseDomainService knowledgeBaseDomainService;
     private final KnowledgeBaseFactory knowledgeBaseFactory;

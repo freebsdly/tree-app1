@@ -1,10 +1,10 @@
-package org.example.treeapp1.infrastructure.persistence;
+package org.example.treeapp1.kb.infrastructure.persistence;
 
-import org.example.treeapp1.domain.knowledgebase.model.KnowledgeBase;
-import org.example.treeapp1.domain.knowledgebase.repository.KnowledgeBaseRepository;
-import org.example.treeapp1.infrastructure.mapper.KnowledgeBaseMapper;
-import org.example.treeapp1.infrastructure.persistence.jpa.repository.JpaKnowledgeBaseEntity;
-import org.example.treeapp1.infrastructure.persistence.jpa.repository.JpaKnowledgeBaseRepository;
+import org.example.treeapp1.kb.domain.knowledgebase.KnowledgeBase;
+import org.example.treeapp1.kb.domain.knowledgebase.KnowledgeBaseRepository;
+import org.example.treeapp1.kb.infrastructure.mapper.KnowledgeBaseMapper;
+import org.example.treeapp1.kb.infrastructure.persistence.jpa.repository.JpaKnowledgeBaseEntity;
+import org.example.treeapp1.kb.infrastructure.persistence.jpa.repository.JpaKnowledgeBaseRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

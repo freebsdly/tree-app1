@@ -1,4 +1,4 @@
-package org.example.treeapp1.infrastructure.persistence.jpa.repository;
+package org.example.treeapp1.kb.infrastructure.persistence.jpa.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;

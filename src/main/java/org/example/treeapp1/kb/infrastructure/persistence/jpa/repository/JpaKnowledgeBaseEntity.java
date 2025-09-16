@@ -1,11 +1,11 @@
-package org.example.treeapp1.infrastructure.persistence.jpa.repository;
+package org.example.treeapp1.kb.infrastructure.persistence.jpa.repository;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.treeapp1.domain.knowledgebase.model.KnowledgeBaseType;
+import org.example.treeapp1.kb.domain.knowledgebase.KnowledgeBaseType;
 
 @Entity
 @Table(name = "knowledge_bases")
