@@ -1,4 +1,4 @@
-package org.example.treeapp1.model;
+package org.example.treeapp1.infrastructure.persistence.jpa.repository;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @Getter
 @Setter
-public abstract class BaseEntity
+public abstract class JpaBaseEntity
 {
     @Column(name = "created_at")
     private LocalDateTime createdAt;

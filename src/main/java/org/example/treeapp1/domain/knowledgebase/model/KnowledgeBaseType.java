@@ -1,4 +1,4 @@
-package org.example.treeapp1.model;
+package org.example.treeapp1.domain.knowledgebase.model;
 
 import lombok.Getter;
 
